@@ -1,3 +1,13 @@
+#include "adnl/adnl-ext-client.h"
+#include "tl-utils/tl-utils.hpp"
+#include "ton/ton-types.h"
+#include "terminal/terminal.h"
+#include "vm/cells.h"
+
+#include "server_http.hpp"
+
+using td::Ref;
+
 using HttpServer = SimpleWeb::Server<SimpleWeb::HTTP>;
 using td::Ref;
 
@@ -68,6 +78,11 @@ class TestNode : public td::actor::Actor {
   void got_one_transaction(ton::BlockIdExt req_blkid, ton::BlockIdExt blkid, td::BufferSlice proof,
                            td::BufferSlice transaction, ton::WorkchainId workchain, ton::StdSmcAddress addr,
                            ton::LogicalTime trans_lt, bool dump);
+  bool get_last_transactions(ton::WorkchainId workchain, ton::StdSmcAddress addr, ton::LogicalTime lt,
+                             ton::Bits256 hash, unsigned count, bool dump);
+  void got_last_transactions(std::vector<ton::BlockIdExt> blkids, td::BufferSlice transactions_boc,
+                             ton::WorkchainId workchain, ton::StdSmcAddress addr, ton::LogicalTime lt,
+                             ton::Bits256 hash, unsigned count, bool dump);
 
   bool do_parse_line();
   bool show_help(std::string command);
@@ -83,6 +98,7 @@ class TestNode : public td::actor::Actor {
   static int parse_hex_digit(int c);
   static bool parse_hash(const char* str, ton::Bits256& hash);
   static bool parse_uint64(std::string word, td::uint64& val);
+  bool parse_hash(ton::Bits256& hash);
   bool parse_lt(ton::LogicalTime& lt);
   bool parse_block_id_ext(ton::BlockIdExt& blkid, bool allow_incomplete = false);
   bool parse_block_id_ext(std::string blk_id_string, ton::BlockIdExt& blkid, bool allow_incomplete = false) const;

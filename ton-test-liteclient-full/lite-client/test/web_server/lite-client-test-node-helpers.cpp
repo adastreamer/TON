@@ -114,6 +114,8 @@ void TestNode::got_server_mc_block_id_silent(ton::BlockIdExt blkid, ton::ZeroSta
     stop();
     return;
   }
+  register_blkid(blkid);
+  //register_blkid(zstateid);
   if (!mc_last_id_.is_valid()) {
     mc_last_id_ = blkid;
     request_block(blkid);
