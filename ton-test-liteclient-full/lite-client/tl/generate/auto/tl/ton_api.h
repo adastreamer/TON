@@ -55,6 +55,10 @@ std::string to_string(const object_ptr<T> &value) {
 
 class Hashable;
 
+class PrivateKey;
+
+class PublicKey;
+
 class TestObject;
 
 class adnl_Address;
@@ -72,10 +76,6 @@ class adnl_packetContents;
 class adnl_PacketHeader;
 
 class adnl_config_global;
-
-class adnl_id_Full;
-
-class adnl_id_Pk;
 
 class adnl_id_short;
 
@@ -132,6 +132,10 @@ class db_lt_Key;
 class db_lt_desc_value;
 
 class db_lt_el_value;
+
+class db_lt_shard_value;
+
+class db_lt_status_value;
 
 class db_root_config;
 
@@ -202,6 +206,8 @@ class liteServer_sendMsgStatus;
 class liteServer_shardInfo;
 
 class liteServer_transactionInfo;
+
+class liteServer_transactionList;
 
 class liteServer_debug_verbosity;
 
@@ -301,7 +307,7 @@ class tonNode_zeroStateIdExt;
 
 class validator_config_global;
 
-class validator_config_local;
+class validator_config_Local;
 
 class validatorSession_blockUpdate;
 
@@ -813,6 +819,210 @@ class hashable_validatorSession final : public Hashable {
   void store(td::TlStorerToString &s, const char *field_name) const final;
 };
 
+class PrivateKey: public Object {
+ public:
+
+  static object_ptr<PrivateKey> fetch(td::TlParser &p);
+};
+
+class pk_unenc final : public PrivateKey {
+ public:
+  td::BufferSlice data_;
+
+  pk_unenc();
+
+  explicit pk_unenc(td::BufferSlice &&data_);
+
+  static const std::int32_t ID = -1311007952;
+  std::int32_t get_id() const final {
+    return ID;
+  }
+
+  static object_ptr<PrivateKey> fetch(td::TlParser &p);
+
+  explicit pk_unenc(td::TlParser &p);
+
+  void store(td::TlStorerCalcLength &s) const final;
+
+  void store(td::TlStorerUnsafe &s) const final;
+
+  void store(td::TlStorerToString &s, const char *field_name) const final;
+};
+
+class pk_ed25519 final : public PrivateKey {
+ public:
+  td::UInt256 key_;
+
+  pk_ed25519();
+
+  explicit pk_ed25519(td::UInt256 const &key_);
+
+  static const std::int32_t ID = 1231561495;
+  std::int32_t get_id() const final {
+    return ID;
+  }
+
+  static object_ptr<PrivateKey> fetch(td::TlParser &p);
+
+  explicit pk_ed25519(td::TlParser &p);
+
+  void store(td::TlStorerCalcLength &s) const final;
+
+  void store(td::TlStorerUnsafe &s) const final;
+
+  void store(td::TlStorerToString &s, const char *field_name) const final;
+};
+
+class pk_aes final : public PrivateKey {
+ public:
+  td::UInt256 key_;
+
+  pk_aes();
+
+  explicit pk_aes(td::UInt256 const &key_);
+
+  static const std::int32_t ID = -1511501513;
+  std::int32_t get_id() const final {
+    return ID;
+  }
+
+  static object_ptr<PrivateKey> fetch(td::TlParser &p);
+
+  explicit pk_aes(td::TlParser &p);
+
+  void store(td::TlStorerCalcLength &s) const final;
+
+  void store(td::TlStorerUnsafe &s) const final;
+
+  void store(td::TlStorerToString &s, const char *field_name) const final;
+};
+
+class pk_overlay final : public PrivateKey {
+ public:
+  td::BufferSlice name_;
+
+  pk_overlay();
+
+  explicit pk_overlay(td::BufferSlice &&name_);
+
+  static const std::int32_t ID = 933623387;
+  std::int32_t get_id() const final {
+    return ID;
+  }
+
+  static object_ptr<PrivateKey> fetch(td::TlParser &p);
+
+  explicit pk_overlay(td::TlParser &p);
+
+  void store(td::TlStorerCalcLength &s) const final;
+
+  void store(td::TlStorerUnsafe &s) const final;
+
+  void store(td::TlStorerToString &s, const char *field_name) const final;
+};
+
+class PublicKey: public Object {
+ public:
+
+  static object_ptr<PublicKey> fetch(td::TlParser &p);
+};
+
+class pub_unenc final : public PublicKey {
+ public:
+  td::BufferSlice data_;
+
+  pub_unenc();
+
+  explicit pub_unenc(td::BufferSlice &&data_);
+
+  static const std::int32_t ID = -1239464694;
+  std::int32_t get_id() const final {
+    return ID;
+  }
+
+  static object_ptr<PublicKey> fetch(td::TlParser &p);
+
+  explicit pub_unenc(td::TlParser &p);
+
+  void store(td::TlStorerCalcLength &s) const final;
+
+  void store(td::TlStorerUnsafe &s) const final;
+
+  void store(td::TlStorerToString &s, const char *field_name) const final;
+};
+
+class pub_ed25519 final : public PublicKey {
+ public:
+  td::UInt256 key_;
+
+  pub_ed25519();
+
+  explicit pub_ed25519(td::UInt256 const &key_);
+
+  static const std::int32_t ID = 1209251014;
+  std::int32_t get_id() const final {
+    return ID;
+  }
+
+  static object_ptr<PublicKey> fetch(td::TlParser &p);
+
+  explicit pub_ed25519(td::TlParser &p);
+
+  void store(td::TlStorerCalcLength &s) const final;
+
+  void store(td::TlStorerUnsafe &s) const final;
+
+  void store(td::TlStorerToString &s, const char *field_name) const final;
+};
+
+class pub_aes final : public PublicKey {
+ public:
+  td::UInt256 key_;
+
+  pub_aes();
+
+  explicit pub_aes(td::UInt256 const &key_);
+
+  static const std::int32_t ID = 767339988;
+  std::int32_t get_id() const final {
+    return ID;
+  }
+
+  static object_ptr<PublicKey> fetch(td::TlParser &p);
+
+  explicit pub_aes(td::TlParser &p);
+
+  void store(td::TlStorerCalcLength &s) const final;
+
+  void store(td::TlStorerUnsafe &s) const final;
+
+  void store(td::TlStorerToString &s, const char *field_name) const final;
+};
+
+class pub_overlay final : public PublicKey {
+ public:
+  td::BufferSlice name_;
+
+  pub_overlay();
+
+  explicit pub_overlay(td::BufferSlice &&name_);
+
+  static const std::int32_t ID = 884622795;
+  std::int32_t get_id() const final {
+    return ID;
+  }
+
+  static object_ptr<PublicKey> fetch(td::TlParser &p);
+
+  explicit pub_overlay(td::TlParser &p);
+
+  void store(td::TlStorerCalcLength &s) const final;
+
+  void store(td::TlStorerUnsafe &s) const final;
+
+  void store(td::TlStorerToString &s, const char *field_name) const final;
+};
+
 class TestObject: public Object {
  public:
 
@@ -1015,31 +1225,6 @@ class adnl_address_tcp6 final : public adnl_Address {
   static object_ptr<adnl_Address> fetch(td::TlParser &p);
 
   explicit adnl_address_tcp6(td::TlParser &p);
-
-  void store(td::TlStorerCalcLength &s) const final;
-
-  void store(td::TlStorerUnsafe &s) const final;
-
-  void store(td::TlStorerToString &s, const char *field_name) const final;
-};
-
-class adnl_address_tunnel final : public adnl_Address {
- public:
-  object_ptr<adnl_Address> to_;
-  object_ptr<adnl_id_Full> tunid_;
-
-  adnl_address_tunnel();
-
-  adnl_address_tunnel(object_ptr<adnl_Address> &&to_, object_ptr<adnl_id_Full> &&tunid_);
-
-  static const std::int32_t ID = 1870715901;
-  std::int32_t get_id() const final {
-    return ID;
-  }
-
-  static object_ptr<adnl_Address> fetch(td::TlParser &p);
-
-  explicit adnl_address_tunnel(td::TlParser &p);
 
   void store(td::TlStorerCalcLength &s) const final;
 
@@ -1275,15 +1460,15 @@ class adnl_message_answer final : public adnl_Message {
 
 class adnl_node final : public Object {
  public:
-  object_ptr<adnl_id_Full> id_;
+  object_ptr<PublicKey> id_;
   object_ptr<adnl_addressList> addr_list_;
   td::BufferSlice signature_;
 
   adnl_node();
 
-  adnl_node(object_ptr<adnl_id_Full> &&id_, object_ptr<adnl_addressList> &&addr_list_, td::BufferSlice &&signature_);
+  adnl_node(object_ptr<PublicKey> &&id_, object_ptr<adnl_addressList> &&addr_list_, td::BufferSlice &&signature_);
 
-  static const std::int32_t ID = 620296016;
+  static const std::int32_t ID = 1354234810;
   std::int32_t get_id() const final {
     return ID;
   }
@@ -1327,7 +1512,7 @@ class adnl_packetContents final : public Object {
  public:
   td::BufferSlice rand1_;
   std::int32_t flags_;
-  object_ptr<adnl_id_Full> from_;
+  object_ptr<PublicKey> from_;
   object_ptr<adnl_id_short> from_short_;
   object_ptr<adnl_Message> message_;
   std::vector<object_ptr<adnl_Message>> messages_;
@@ -1343,9 +1528,9 @@ class adnl_packetContents final : public Object {
 
   adnl_packetContents();
 
-  adnl_packetContents(td::BufferSlice &&rand1_, std::int32_t flags_, object_ptr<adnl_id_Full> &&from_, object_ptr<adnl_id_short> &&from_short_, object_ptr<adnl_Message> &&message_, std::vector<object_ptr<adnl_Message>> &&messages_, object_ptr<adnl_addressList> &&address_, std::int64_t seqno_, std::int32_t recv_addr_list_version_, std::int64_t confirm_seqno_, std::int32_t reinit_date_, std::int32_t dst_reinit_date_, td::BufferSlice &&signature_, td::BufferSlice &&rand2_);
+  adnl_packetContents(td::BufferSlice &&rand1_, std::int32_t flags_, object_ptr<PublicKey> &&from_, object_ptr<adnl_id_short> &&from_short_, object_ptr<adnl_Message> &&message_, std::vector<object_ptr<adnl_Message>> &&messages_, object_ptr<adnl_addressList> &&address_, std::int64_t seqno_, std::int32_t recv_addr_list_version_, std::int64_t confirm_seqno_, std::int32_t reinit_date_, std::int32_t dst_reinit_date_, td::BufferSlice &&signature_, td::BufferSlice &&rand2_);
 
-  static const std::int32_t ID = 672164373;
+  static const std::int32_t ID = 826010634;
   std::int32_t get_id() const final {
     return ID;
   }
@@ -1455,210 +1640,6 @@ class adnl_config_global final : public Object {
   static object_ptr<adnl_config_global> fetch(td::TlParser &p);
 
   explicit adnl_config_global(td::TlParser &p);
-
-  void store(td::TlStorerCalcLength &s) const final;
-
-  void store(td::TlStorerUnsafe &s) const final;
-
-  void store(td::TlStorerToString &s, const char *field_name) const final;
-};
-
-class adnl_id_Full: public Object {
- public:
-
-  static object_ptr<adnl_id_Full> fetch(td::TlParser &p);
-};
-
-class adnl_id_ed25519 final : public adnl_id_Full {
- public:
-  td::UInt256 key_;
-
-  adnl_id_ed25519();
-
-  explicit adnl_id_ed25519(td::UInt256 const &key_);
-
-  static const std::int32_t ID = -1977122418;
-  std::int32_t get_id() const final {
-    return ID;
-  }
-
-  static object_ptr<adnl_id_Full> fetch(td::TlParser &p);
-
-  explicit adnl_id_ed25519(td::TlParser &p);
-
-  void store(td::TlStorerCalcLength &s) const final;
-
-  void store(td::TlStorerUnsafe &s) const final;
-
-  void store(td::TlStorerToString &s, const char *field_name) const final;
-};
-
-class adnl_id_aes final : public adnl_id_Full {
- public:
-  td::UInt256 key_;
-
-  adnl_id_aes();
-
-  explicit adnl_id_aes(td::UInt256 const &key_);
-
-  static const std::int32_t ID = -1843301606;
-  std::int32_t get_id() const final {
-    return ID;
-  }
-
-  static object_ptr<adnl_id_Full> fetch(td::TlParser &p);
-
-  explicit adnl_id_aes(td::TlParser &p);
-
-  void store(td::TlStorerCalcLength &s) const final;
-
-  void store(td::TlStorerUnsafe &s) const final;
-
-  void store(td::TlStorerToString &s, const char *field_name) const final;
-};
-
-class adnl_id_unenc final : public adnl_id_Full {
- public:
-  td::BufferSlice data_;
-
-  adnl_id_unenc();
-
-  explicit adnl_id_unenc(td::BufferSlice &&data_);
-
-  static const std::int32_t ID = -781946142;
-  std::int32_t get_id() const final {
-    return ID;
-  }
-
-  static object_ptr<adnl_id_Full> fetch(td::TlParser &p);
-
-  explicit adnl_id_unenc(td::TlParser &p);
-
-  void store(td::TlStorerCalcLength &s) const final;
-
-  void store(td::TlStorerUnsafe &s) const final;
-
-  void store(td::TlStorerToString &s, const char *field_name) const final;
-};
-
-class adnl_id_overlay final : public adnl_id_Full {
- public:
-  td::BufferSlice name_;
-
-  adnl_id_overlay();
-
-  explicit adnl_id_overlay(td::BufferSlice &&name_);
-
-  static const std::int32_t ID = 542300433;
-  std::int32_t get_id() const final {
-    return ID;
-  }
-
-  static object_ptr<adnl_id_Full> fetch(td::TlParser &p);
-
-  explicit adnl_id_overlay(td::TlParser &p);
-
-  void store(td::TlStorerCalcLength &s) const final;
-
-  void store(td::TlStorerUnsafe &s) const final;
-
-  void store(td::TlStorerToString &s, const char *field_name) const final;
-};
-
-class adnl_id_Pk: public Object {
- public:
-
-  static object_ptr<adnl_id_Pk> fetch(td::TlParser &p);
-};
-
-class adnl_id_pk_unenc final : public adnl_id_Pk {
- public:
-  td::BufferSlice data_;
-
-  adnl_id_pk_unenc();
-
-  explicit adnl_id_pk_unenc(td::BufferSlice &&data_);
-
-  static const std::int32_t ID = -2134363424;
-  std::int32_t get_id() const final {
-    return ID;
-  }
-
-  static object_ptr<adnl_id_Pk> fetch(td::TlParser &p);
-
-  explicit adnl_id_pk_unenc(td::TlParser &p);
-
-  void store(td::TlStorerCalcLength &s) const final;
-
-  void store(td::TlStorerUnsafe &s) const final;
-
-  void store(td::TlStorerToString &s, const char *field_name) const final;
-};
-
-class adnl_id_pk_ed25519 final : public adnl_id_Pk {
- public:
-  td::UInt256 key_;
-
-  adnl_id_pk_ed25519();
-
-  explicit adnl_id_pk_ed25519(td::UInt256 const &key_);
-
-  static const std::int32_t ID = -1860420410;
-  std::int32_t get_id() const final {
-    return ID;
-  }
-
-  static object_ptr<adnl_id_Pk> fetch(td::TlParser &p);
-
-  explicit adnl_id_pk_ed25519(td::TlParser &p);
-
-  void store(td::TlStorerCalcLength &s) const final;
-
-  void store(td::TlStorerUnsafe &s) const final;
-
-  void store(td::TlStorerToString &s, const char *field_name) const final;
-};
-
-class adnl_id_pk_aes final : public adnl_id_Pk {
- public:
-  td::UInt256 key_;
-
-  adnl_id_pk_aes();
-
-  explicit adnl_id_pk_aes(td::UInt256 const &key_);
-
-  static const std::int32_t ID = 1558834017;
-  std::int32_t get_id() const final {
-    return ID;
-  }
-
-  static object_ptr<adnl_id_Pk> fetch(td::TlParser &p);
-
-  explicit adnl_id_pk_aes(td::TlParser &p);
-
-  void store(td::TlStorerCalcLength &s) const final;
-
-  void store(td::TlStorerUnsafe &s) const final;
-
-  void store(td::TlStorerToString &s, const char *field_name) const final;
-};
-
-class adnl_id_pk_overlay final : public adnl_id_Pk {
- public:
-  td::BufferSlice name_;
-
-  adnl_id_pk_overlay();
-
-  explicit adnl_id_pk_overlay(td::BufferSlice &&name_);
-
-  static const std::int32_t ID = -271455862;
-  std::int32_t get_id() const final {
-    return ID;
-  }
-
-  static object_ptr<adnl_id_Pk> fetch(td::TlParser &p);
-
-  explicit adnl_id_pk_overlay(td::TlParser &p);
 
   void store(td::TlStorerCalcLength &s) const final;
 
@@ -2104,13 +2085,13 @@ class catchain_block_data_vector final : public catchain_block_inner_Data {
 class catchain_config_global final : public Object {
  public:
   td::UInt256 tag_;
-  std::vector<object_ptr<adnl_id_Full>> nodes_;
+  std::vector<object_ptr<PublicKey>> nodes_;
 
   catchain_config_global();
 
-  catchain_config_global(td::UInt256 const &tag_, std::vector<object_ptr<adnl_id_Full>> &&nodes_);
+  catchain_config_global(td::UInt256 const &tag_, std::vector<object_ptr<PublicKey>> &&nodes_);
 
-  static const std::int32_t ID = 361026880;
+  static const std::int32_t ID = 1757918801;
   std::int32_t get_id() const final {
     return ID;
   }
@@ -2189,14 +2170,14 @@ class config_local final : public Object {
   std::vector<object_ptr<overlay_config_Local>> public_overlays_;
   std::vector<object_ptr<catchain_config_local>> catchains_;
   std::vector<object_ptr<dummyworkchain0_config_local>> dummy0_;
-  std::vector<object_ptr<validator_config_local>> validators_;
+  std::vector<object_ptr<validator_config_Local>> validators_;
   std::vector<object_ptr<liteserver_config_local>> liteservers_;
 
   config_local();
 
-  config_local(std::vector<std::int32_t> &&udp_ports_, std::vector<std::int32_t> &&tcp_ports_, std::vector<object_ptr<id_config_local>> &&local_ids_, std::vector<object_ptr<dht_config_Local>> &&dht_, std::vector<object_ptr<overlay_config_Local>> &&public_overlays_, std::vector<object_ptr<catchain_config_local>> &&catchains_, std::vector<object_ptr<dummyworkchain0_config_local>> &&dummy0_, std::vector<object_ptr<validator_config_local>> &&validators_, std::vector<object_ptr<liteserver_config_local>> &&liteservers_);
+  config_local(std::vector<std::int32_t> &&udp_ports_, std::vector<std::int32_t> &&tcp_ports_, std::vector<object_ptr<id_config_local>> &&local_ids_, std::vector<object_ptr<dht_config_Local>> &&dht_, std::vector<object_ptr<overlay_config_Local>> &&public_overlays_, std::vector<object_ptr<catchain_config_local>> &&catchains_, std::vector<object_ptr<dummyworkchain0_config_local>> &&dummy0_, std::vector<object_ptr<validator_config_Local>> &&validators_, std::vector<object_ptr<liteserver_config_local>> &&liteservers_);
 
-  static const std::int32_t ID = 41976406;
+  static const std::int32_t ID = 340000344;
   std::int32_t get_id() const final {
     return ID;
   }
@@ -2700,6 +2681,51 @@ class db_lt_desc_key final : public db_lt_Key {
   void store(td::TlStorerToString &s, const char *field_name) const final;
 };
 
+class db_lt_shard_key final : public db_lt_Key {
+ public:
+  std::int32_t idx_;
+
+  db_lt_shard_key();
+
+  explicit db_lt_shard_key(std::int32_t idx_);
+
+  static const std::int32_t ID = 1353120015;
+  std::int32_t get_id() const final {
+    return ID;
+  }
+
+  static object_ptr<db_lt_Key> fetch(td::TlParser &p);
+
+  explicit db_lt_shard_key(td::TlParser &p);
+
+  void store(td::TlStorerCalcLength &s) const final;
+
+  void store(td::TlStorerUnsafe &s) const final;
+
+  void store(td::TlStorerToString &s, const char *field_name) const final;
+};
+
+class db_lt_status_key final : public db_lt_Key {
+ public:
+
+  db_lt_status_key();
+
+  static const std::int32_t ID = 2003591255;
+  std::int32_t get_id() const final {
+    return ID;
+  }
+
+  static object_ptr<db_lt_Key> fetch(td::TlParser &p);
+
+  explicit db_lt_status_key(td::TlParser &p);
+
+  void store(td::TlStorerCalcLength &s) const final;
+
+  void store(td::TlStorerUnsafe &s) const final;
+
+  void store(td::TlStorerToString &s, const char *field_name) const final;
+};
+
 class db_lt_desc_value final : public Object {
  public:
   std::int32_t first_idx_;
@@ -2744,6 +2770,55 @@ class db_lt_el_value final : public Object {
   static object_ptr<db_lt_el_value> fetch(td::TlParser &p);
 
   explicit db_lt_el_value(td::TlParser &p);
+
+  void store(td::TlStorerCalcLength &s) const final;
+
+  void store(td::TlStorerUnsafe &s) const final;
+
+  void store(td::TlStorerToString &s, const char *field_name) const final;
+};
+
+class db_lt_shard_value final : public Object {
+ public:
+  std::int32_t workchain_;
+  std::int64_t shard_;
+
+  db_lt_shard_value();
+
+  db_lt_shard_value(std::int32_t workchain_, std::int64_t shard_);
+
+  static const std::int32_t ID = 1014209147;
+  std::int32_t get_id() const final {
+    return ID;
+  }
+
+  static object_ptr<db_lt_shard_value> fetch(td::TlParser &p);
+
+  explicit db_lt_shard_value(td::TlParser &p);
+
+  void store(td::TlStorerCalcLength &s) const final;
+
+  void store(td::TlStorerUnsafe &s) const final;
+
+  void store(td::TlStorerToString &s, const char *field_name) const final;
+};
+
+class db_lt_status_value final : public Object {
+ public:
+  std::int32_t total_shards_;
+
+  db_lt_status_value();
+
+  explicit db_lt_status_value(std::int32_t total_shards_);
+
+  static const std::int32_t ID = -88150727;
+  std::int32_t get_id() const final {
+    return ID;
+  }
+
+  static object_ptr<db_lt_status_value> fetch(td::TlParser &p);
+
+  explicit db_lt_status_value(td::TlParser &p);
 
   void store(td::TlStorerCalcLength &s) const final;
 
@@ -3052,15 +3127,15 @@ class dht_key final : public Object {
 class dht_keyDescription final : public Object {
  public:
   object_ptr<dht_key> key_;
-  object_ptr<adnl_id_Full> id_;
+  object_ptr<PublicKey> id_;
   object_ptr<dht_UpdateRule> update_rule_;
   td::BufferSlice signature_;
 
   dht_keyDescription();
 
-  dht_keyDescription(object_ptr<dht_key> &&key_, object_ptr<adnl_id_Full> &&id_, object_ptr<dht_UpdateRule> &&update_rule_, td::BufferSlice &&signature_);
+  dht_keyDescription(object_ptr<dht_key> &&key_, object_ptr<PublicKey> &&id_, object_ptr<dht_UpdateRule> &&update_rule_, td::BufferSlice &&signature_);
 
-  static const std::int32_t ID = 862674694;
+  static const std::int32_t ID = 673009157;
   std::int32_t get_id() const final {
     return ID;
   }
@@ -3102,16 +3177,16 @@ class dht_message final : public Object {
 
 class dht_node final : public Object {
  public:
-  object_ptr<adnl_id_Full> id_;
+  object_ptr<PublicKey> id_;
   object_ptr<adnl_addressList> addr_list_;
   std::int32_t version_;
   td::BufferSlice signature_;
 
   dht_node();
 
-  dht_node(object_ptr<adnl_id_Full> &&id_, object_ptr<adnl_addressList> &&addr_list_, std::int32_t version_, td::BufferSlice &&signature_);
+  dht_node(object_ptr<PublicKey> &&id_, object_ptr<adnl_addressList> &&addr_list_, std::int32_t version_, td::BufferSlice &&signature_);
 
-  static const std::int32_t ID = 1725249223;
+  static const std::int32_t ID = -2074922424;
   std::int32_t get_id() const final {
     return ID;
   }
@@ -3562,14 +3637,14 @@ class fer_simple final : public fer_Type {
 
 class id_config_local final : public Object {
  public:
-  object_ptr<adnl_id_Pk> id_;
+  object_ptr<PrivateKey> id_;
   object_ptr<adnl_addressList> addr_list_;
 
   id_config_local();
 
-  id_config_local(object_ptr<adnl_id_Pk> &&id_, object_ptr<adnl_addressList> &&addr_list_);
+  id_config_local(object_ptr<PrivateKey> &&id_, object_ptr<adnl_addressList> &&addr_list_);
 
-  static const std::int32_t ID = 993556028;
+  static const std::int32_t ID = 488427039;
   std::int32_t get_id() const final {
     return ID;
   }
@@ -3892,6 +3967,31 @@ class liteServer_transactionInfo final : public Object {
   void store(td::TlStorerToString &s, const char *field_name) const final;
 };
 
+class liteServer_transactionList final : public Object {
+ public:
+  std::vector<object_ptr<tonNode_blockIdExt>> ids_;
+  td::BufferSlice transactions_;
+
+  liteServer_transactionList();
+
+  liteServer_transactionList(std::vector<object_ptr<tonNode_blockIdExt>> &&ids_, td::BufferSlice &&transactions_);
+
+  static const std::int32_t ID = 1864812043;
+  std::int32_t get_id() const final {
+    return ID;
+  }
+
+  static object_ptr<liteServer_transactionList> fetch(td::TlParser &p);
+
+  explicit liteServer_transactionList(td::TlParser &p);
+
+  void store(td::TlStorerCalcLength &s) const final;
+
+  void store(td::TlStorerUnsafe &s) const final;
+
+  void store(td::TlStorerToString &s, const char *field_name) const final;
+};
+
 class liteServer_debug_verbosity final : public Object {
  public:
   std::int32_t value_;
@@ -3918,15 +4018,15 @@ class liteServer_debug_verbosity final : public Object {
 
 class liteclient_config_global final : public Object {
  public:
-  object_ptr<adnl_id_Full> id_;
+  object_ptr<PublicKey> id_;
   std::int32_t ip_;
   std::int32_t port_;
 
   liteclient_config_global();
 
-  liteclient_config_global(object_ptr<adnl_id_Full> &&id_, std::int32_t ip_, std::int32_t port_);
+  liteclient_config_global(object_ptr<PublicKey> &&id_, std::int32_t ip_, std::int32_t port_);
 
-  static const std::int32_t ID = -285892428;
+  static const std::int32_t ID = 1100678618;
   std::int32_t get_id() const final {
     return ID;
   }
@@ -3944,14 +4044,14 @@ class liteclient_config_global final : public Object {
 
 class liteserver_config_local final : public Object {
  public:
-  object_ptr<adnl_id_Pk> id_;
+  object_ptr<PrivateKey> id_;
   std::int32_t port_;
 
   liteserver_config_local();
 
-  liteserver_config_local(object_ptr<adnl_id_Pk> &&id_, std::int32_t port_);
+  liteserver_config_local(object_ptr<PrivateKey> &&id_, std::int32_t port_);
 
-  static const std::int32_t ID = 1129790198;
+  static const std::int32_t ID = 1182002063;
   std::int32_t get_id() const final {
     return ID;
   }
@@ -4047,7 +4147,7 @@ class overlay_unicast final : public overlay_Broadcast {
 
 class overlay_broadcast final : public overlay_Broadcast {
  public:
-  object_ptr<adnl_id_Full> src_;
+  object_ptr<PublicKey> src_;
   object_ptr<overlay_Certificate> certificate_;
   std::int32_t flags_;
   td::BufferSlice data_;
@@ -4056,9 +4156,9 @@ class overlay_broadcast final : public overlay_Broadcast {
 
   overlay_broadcast();
 
-  overlay_broadcast(object_ptr<adnl_id_Full> &&src_, object_ptr<overlay_Certificate> &&certificate_, std::int32_t flags_, td::BufferSlice &&data_, std::int32_t date_, td::BufferSlice &&signature_);
+  overlay_broadcast(object_ptr<PublicKey> &&src_, object_ptr<overlay_Certificate> &&certificate_, std::int32_t flags_, td::BufferSlice &&data_, std::int32_t date_, td::BufferSlice &&signature_);
 
-  static const std::int32_t ID = 1952835017;
+  static const std::int32_t ID = -1319490709;
   std::int32_t get_id() const final {
     return ID;
   }
@@ -4076,7 +4176,7 @@ class overlay_broadcast final : public overlay_Broadcast {
 
 class overlay_broadcastFer final : public overlay_Broadcast {
  public:
-  object_ptr<adnl_id_Full> src_;
+  object_ptr<PublicKey> src_;
   object_ptr<overlay_Certificate> certificate_;
   td::UInt256 data_hash_;
   std::int32_t data_size_;
@@ -4089,9 +4189,9 @@ class overlay_broadcastFer final : public overlay_Broadcast {
 
   overlay_broadcastFer();
 
-  overlay_broadcastFer(object_ptr<adnl_id_Full> &&src_, object_ptr<overlay_Certificate> &&certificate_, td::UInt256 const &data_hash_, std::int32_t data_size_, std::int32_t flags_, td::BufferSlice &&data_, std::int32_t seqno_, object_ptr<fer_Type> &&fer_, std::int32_t date_, td::BufferSlice &&signature_);
+  overlay_broadcastFer(object_ptr<PublicKey> &&src_, object_ptr<overlay_Certificate> &&certificate_, td::UInt256 const &data_hash_, std::int32_t data_size_, std::int32_t flags_, td::BufferSlice &&data_, std::int32_t seqno_, object_ptr<fer_Type> &&fer_, std::int32_t date_, td::BufferSlice &&signature_);
 
-  static const std::int32_t ID = 1410220279;
+  static const std::int32_t ID = -1677059472;
   std::int32_t get_id() const final {
     return ID;
   }
@@ -4109,7 +4209,7 @@ class overlay_broadcastFer final : public overlay_Broadcast {
 
 class overlay_broadcastFerShort final : public overlay_Broadcast {
  public:
-  object_ptr<adnl_id_Full> src_;
+  object_ptr<PublicKey> src_;
   object_ptr<overlay_Certificate> certificate_;
   td::UInt256 broadcast_hash_;
   td::UInt256 part_data_hash_;
@@ -4118,9 +4218,9 @@ class overlay_broadcastFerShort final : public overlay_Broadcast {
 
   overlay_broadcastFerShort();
 
-  overlay_broadcastFerShort(object_ptr<adnl_id_Full> &&src_, object_ptr<overlay_Certificate> &&certificate_, td::UInt256 const &broadcast_hash_, td::UInt256 const &part_data_hash_, std::int32_t seqno_, td::BufferSlice &&signature_);
+  overlay_broadcastFerShort(object_ptr<PublicKey> &&src_, object_ptr<overlay_Certificate> &&certificate_, td::UInt256 const &broadcast_hash_, td::UInt256 const &part_data_hash_, std::int32_t seqno_, td::BufferSlice &&signature_);
 
-  static const std::int32_t ID = 1539003811;
+  static const std::int32_t ID = -550130078;
   std::int32_t get_id() const final {
     return ID;
   }
@@ -4189,16 +4289,16 @@ class overlay_Certificate: public Object {
 
 class overlay_certificate final : public overlay_Certificate {
  public:
-  object_ptr<adnl_id_Full> issued_by_;
+  object_ptr<PublicKey> issued_by_;
   std::int32_t expire_at_;
   std::int32_t max_size_;
   td::BufferSlice signature_;
 
   overlay_certificate();
 
-  overlay_certificate(object_ptr<adnl_id_Full> &&issued_by_, std::int32_t expire_at_, std::int32_t max_size_, td::BufferSlice &&signature_);
+  overlay_certificate(object_ptr<PublicKey> &&issued_by_, std::int32_t expire_at_, std::int32_t max_size_, td::BufferSlice &&signature_);
 
-  static const std::int32_t ID = -1712165242;
+  static const std::int32_t ID = -526461135;
   std::int32_t get_id() const final {
     return ID;
   }
@@ -4288,16 +4388,16 @@ class overlay_message final : public Object {
 
 class overlay_node final : public Object {
  public:
-  object_ptr<adnl_id_Full> id_;
+  object_ptr<PublicKey> id_;
   td::UInt256 overlay_;
   std::int32_t version_;
   td::BufferSlice signature_;
 
   overlay_node();
 
-  overlay_node(object_ptr<adnl_id_Full> &&id_, td::UInt256 const &overlay_, std::int32_t version_, td::BufferSlice &&signature_);
+  overlay_node(object_ptr<PublicKey> &&id_, td::UInt256 const &overlay_, std::int32_t version_, td::BufferSlice &&signature_);
 
-  static const std::int32_t ID = -1284920910;
+  static const std::int32_t ID = -1200911741;
   std::int32_t get_id() const final {
     return ID;
   }
@@ -4997,13 +5097,13 @@ class test0_masterchainStateExtra_extra final : public test0_MasterchainStateExt
   std::int32_t next_rotate_at_;
   std::vector<object_ptr<tonNode_blockIdExt>> prev_blocks_;
   std::vector<object_ptr<test0_masterchain_shardInfo>> shards_;
-  std::vector<object_ptr<adnl_id_Full>> pool_;
+  std::vector<object_ptr<PublicKey>> pool_;
 
   test0_masterchainStateExtra_extra();
 
-  test0_masterchainStateExtra_extra(std::int32_t validator_ts_, std::int32_t validator_randseed_, std::int32_t next_randseed_, std::int32_t next_rotate_at_, std::vector<object_ptr<tonNode_blockIdExt>> &&prev_blocks_, std::vector<object_ptr<test0_masterchain_shardInfo>> &&shards_, std::vector<object_ptr<adnl_id_Full>> &&pool_);
+  test0_masterchainStateExtra_extra(std::int32_t validator_ts_, std::int32_t validator_randseed_, std::int32_t next_randseed_, std::int32_t next_rotate_at_, std::vector<object_ptr<tonNode_blockIdExt>> &&prev_blocks_, std::vector<object_ptr<test0_masterchain_shardInfo>> &&shards_, std::vector<object_ptr<PublicKey>> &&pool_);
 
-  static const std::int32_t ID = 2099087416;
+  static const std::int32_t ID = -1205072155;
   std::int32_t get_id() const final {
     return ID;
   }
@@ -5760,7 +5860,13 @@ class validator_config_global final : public Object {
   void store(td::TlStorerToString &s, const char *field_name) const final;
 };
 
-class validator_config_local final : public Object {
+class validator_config_Local: public Object {
+ public:
+
+  static object_ptr<validator_config_Local> fetch(td::TlParser &p);
+};
+
+class validator_config_local final : public validator_config_Local {
  public:
   object_ptr<adnl_id_short> id_;
 
@@ -5773,9 +5879,33 @@ class validator_config_local final : public Object {
     return ID;
   }
 
-  static object_ptr<validator_config_local> fetch(td::TlParser &p);
+  static object_ptr<validator_config_Local> fetch(td::TlParser &p);
 
   explicit validator_config_local(td::TlParser &p);
+
+  void store(td::TlStorerCalcLength &s) const final;
+
+  void store(td::TlStorerUnsafe &s) const final;
+
+  void store(td::TlStorerToString &s, const char *field_name) const final;
+};
+
+class validator_config_random_local final : public validator_config_Local {
+ public:
+  object_ptr<adnl_addressList> addr_list_;
+
+  validator_config_random_local();
+
+  explicit validator_config_random_local(object_ptr<adnl_addressList> &&addr_list_);
+
+  static const std::int32_t ID = 1501795426;
+  std::int32_t get_id() const final {
+    return ID;
+  }
+
+  static object_ptr<validator_config_Local> fetch(td::TlParser &p);
+
+  explicit validator_config_random_local(td::TlParser &p);
 
   void store(td::TlStorerCalcLength &s) const final;
 
@@ -6779,6 +6909,36 @@ class liteServer_getTime final : public Function {
   static object_ptr<liteServer_getTime> fetch(td::TlParser &p);
 
   explicit liteServer_getTime(td::TlParser &p);
+
+  void store(td::TlStorerCalcLength &s) const final;
+
+  void store(td::TlStorerUnsafe &s) const final;
+
+  void store(td::TlStorerToString &s, const char *field_name) const final;
+
+  static ReturnType fetch_result(td::TlParser &p);
+};
+
+class liteServer_getTransactions final : public Function {
+ public:
+  std::int32_t count_;
+  object_ptr<liteServer_accountId> account_;
+  std::int64_t lt_;
+  td::UInt256 hash_;
+  mutable std::int32_t var0;
+
+  liteServer_getTransactions();
+
+  liteServer_getTransactions(std::int32_t count_, object_ptr<liteServer_accountId> &&account_, std::int64_t lt_, td::UInt256 const &hash_);
+
+  static const std::int32_t ID = 474015649;
+  std::int32_t get_id() const final {
+    return ID;
+  }
+
+  using ReturnType = object_ptr<liteServer_transactionList>;
+
+  static object_ptr<liteServer_getTransactions> fetch(td::TlParser &p);
 
   void store(td::TlStorerCalcLength &s) const final;
 
