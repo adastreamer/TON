@@ -1,13 +1,14 @@
-#ifndef SIMPLE_WEB_UTILITY_HPP
-#define SIMPLE_WEB_UTILITY_HPP
+#pragma once
 
-#include "status_code.hpp"
 #include <atomic>
 #include <cstdlib>
 #include <iostream>
 #include <memory>
 #include <string>
 #include <unordered_map>
+
+#include "status_code.hpp"
+
 
 #if __cplusplus > 201402L || _MSVC_LANG > 201402L
 #include <string_view>
@@ -359,5 +360,3 @@ namespace SimpleWeb {
     }
   };
 } // namespace SimpleWeb
-
-#endif // SIMPLE_WEB_UTILITY_HPP

@@ -1,7 +1,5 @@
-#ifndef SERVER_HTTP_HPP
-#define SERVER_HTTP_HPP
+#pragma once
 
-#include "utility.hpp"
 #include <functional>
 #include <iostream>
 #include <limits>
@@ -12,37 +10,10 @@
 #include <thread>
 #include <unordered_set>
 
-#ifdef USE_STANDALONE_ASIO
-#include <asio.hpp>
-#include <asio/steady_timer.hpp>
-namespace SimpleWeb {
-  using error_code = std::error_code;
-  using errc = std::errc;
-  namespace make_error_code = std;
-} // namespace SimpleWeb
-#else
-#include <boost/asio.hpp>
-#include <boost/asio/steady_timer.hpp>
-namespace SimpleWeb {
-  namespace asio = boost::asio;
-  using error_code = boost::system::error_code;
-  namespace errc = boost::system::errc;
-  namespace make_error_code = boost::system::errc;
-} // namespace SimpleWeb
-#endif
 
-// Late 2017 TODO: remove the following checks and always use std::regex
-#ifdef USE_BOOST_REGEX
-#include <boost/regex.hpp>
-namespace SimpleWeb {
-  namespace regex = boost;
-}
-#else
-#include <regex>
-namespace SimpleWeb {
-  namespace regex = std;
-}
-#endif
+#include "utility.hpp"
+#include "macro.hpp"
+
 
 namespace SimpleWeb {
   template <class socket_type>
@@ -371,9 +342,11 @@ namespace SimpleWeb {
 
   public:
     /// Warning: do not add or remove resources after start() is called
-    std::map<regex_orderable, std::map<std::string, std::function<void(std::shared_ptr<typename ServerBase<socket_type>::Response>, std::shared_ptr<typename ServerBase<socket_type>::Request>)>>> resource;
+    std::map<regex_orderable,std::map<std::string, std::function<void(std::shared_ptr<typename ServerBase<socket_type>::Response>,
+            std::shared_ptr<typename ServerBase<socket_type>::Request>)>>> resource;
 
-    std::map<std::string, std::function<void(std::shared_ptr<typename ServerBase<socket_type>::Response>, std::shared_ptr<typename ServerBase<socket_type>::Request>)>> default_resource;
+    std::map<std::string, std::function<void(std::shared_ptr<typename ServerBase<socket_type>::Response>,
+            std::shared_ptr<typename ServerBase<socket_type>::Request>)>> default_resource;
 
     std::function<void(std::shared_ptr<typename ServerBase<socket_type>::Request>, const error_code &)> on_error;
 
@@ -760,7 +733,9 @@ namespace SimpleWeb {
   template <>
   class Server<HTTP> : public ServerBase<HTTP> {
   public:
-    Server() noexcept : ServerBase<HTTP>::ServerBase(80) {}
+    explicit Server() noexcept : ServerBase<HTTP>::ServerBase(80) {}
+    ~Server();
+
 
   protected:
     void accept() override {
@@ -791,4 +766,3 @@ namespace SimpleWeb {
   };
 } // namespace SimpleWeb
 
-#endif /* SERVER_HTTP_HPP */
