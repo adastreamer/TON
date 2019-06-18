@@ -168,10 +168,15 @@ add_subdirectory(lite-client/adnl)
 add_subdirectory(lite-client/crypto)
 
 
+#BOOST
+set(Boost_USE_STATIC_LIBS ON)
+find_package(Boost 1.69 REQUIRED COMPONENTS system)
+include_directories(${Boost_INCLUDE_DIR})
+#BOOST
+
 file(GLOB SRC src/*.cpp)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/incl)
-include_directories(contrib)
 
 set(PROJ_NAME test-lite-client-with-webserver)
 add_executable (${PROJ_NAME} ${SRC})
