@@ -14,6 +14,13 @@
 #include "utility.hpp"
 #include "macro.hpp"
 
+
+#include "http_util/responce.hpp"
+#include "http_util/session.hpp"
+#include "http_util/request.hpp"
+#include "http_util/connection.hpp"
+
+
 namespace SimpleWeb {
   template <class socket_type>
   class Server;
@@ -780,23 +787,6 @@ namespace SimpleWeb {
       });
     }
   };
-
-
-  class Request{};
-
-  class Responce{
-
-  };
-
-  class Session{};
-
-  class Connection{
-  public:
-      Connection();
-  };
-
-  class Content{};
-
 
 
 
