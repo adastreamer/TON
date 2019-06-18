@@ -9,8 +9,8 @@
  - First step get and install boost
  ```sh 
  wget https://sourceforge.net/projects/boost/files/boost/1.69.0/boost_1_69_0.tar.gz/download
- tar xzvf 
- cd boost
+ tar xzvf boost_1_69_0.tar.gz
+ cd boost_1_69_0/
  ./bootstrap.sh --prefix=/usr/local
  #allow to see value of cores allow to install boost parallel
  cpuCores=`cat /proc/cpuinfo | grep "cpu cores" | uniq | awk '{print $NF}'`
