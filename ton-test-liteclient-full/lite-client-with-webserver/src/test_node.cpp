@@ -1848,7 +1848,6 @@ bool TestNode::give_block_header_description(std::ostringstream& out, ton::Block
 }
 
 
-
 void TestNode::get_account_state_web(std::string address, std::shared_ptr<HttpServer::Response> response) {
     ton::WorkchainId workchain = ton::masterchainId;  // change to basechain later
     ton::StdSmcAddress addr;

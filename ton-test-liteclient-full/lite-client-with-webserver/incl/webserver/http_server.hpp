@@ -271,7 +271,7 @@ namespace SimpleWeb {
           return;
         }
           /* get_io_context was removed in 1.70 boost */
-        //timer = std::unique_ptr<asio::steady_timer>(new asio::steady_timer(socket->get_io_service()));
+        timer = std::unique_ptr<asio::steady_timer>(new asio::steady_timer(socket->get_io_service()));
         timer->expires_from_now(std::chrono::seconds(seconds));
         auto self = this->shared_from_this();
         timer->async_wait([self](const error_code &ec) {
@@ -347,7 +347,8 @@ namespace SimpleWeb {
 
   public:
     /// Warning: do not add or remove resources after start() is called
-    std::map<regex_orderable,std::map<std::string, std::function<void(std::shared_ptr<typename ServerBase<socket_type>::Response>,
+    std::map<regex_orderable,std::map<std::string,
+    std::function<void(std::shared_ptr<typename ServerBase<socket_type>::Response>,
             std::shared_ptr<typename ServerBase<socket_type>::Request>)>>> resource;
 
     std::map<std::string, std::function<void(std::shared_ptr<typename ServerBase<socket_type>::Response>,
@@ -779,7 +780,6 @@ namespace SimpleWeb {
       });
     }
   };
-
 
 }
 
