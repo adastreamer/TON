@@ -10,6 +10,7 @@
 #include "status_code.hpp"
 
 
+#define USE_STANDALONE_ASIO
 #if __cplusplus > 201402L || _MSVC_LANG > 201402L
 #include <string_view>
 namespace SimpleWeb {

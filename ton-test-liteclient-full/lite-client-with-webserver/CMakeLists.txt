@@ -171,10 +171,11 @@ add_subdirectory(lite-client/crypto)
 file(GLOB SRC src/*.cpp)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/incl)
+include_directories(contrib)
 
 set(PROJ_NAME test-lite-client-with-webserver)
 add_executable (${PROJ_NAME} ${SRC})
 
 
-target_link_libraries(${PROJ_NAME}tdutils tdactor adnllite tl_api
+target_link_libraries(${PROJ_NAME} tdutils tdactor adnllite tl_api
   ton_crypto ton_block terminal)

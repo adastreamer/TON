@@ -4,6 +4,40 @@
 #include "terminal/terminal.h"
 #include "vm/cells.h"
 
+
+
+#include <ton/ton-tl.hpp>
+#include <crypto/block/block.h>
+#include <td/utils/filesystem.h>
+#include <ton/ton-shard.h>
+#include "adnl/adnl-ext-client.h"
+#include "tl-utils/tl-utils.hpp"
+#include "auto/tl/ton_api_json.h"
+
+#include "td/utils/OptionsParser.h"
+#include "td/utils/Time.h"
+#include "td/utils/filesystem.h"
+#include "td/utils/format.h"
+#include "td/utils/Random.h"
+#include "td/utils/crypto.h"
+#include "td/utils/port/signals.h"
+#include "td/utils/port/stacktrace.h"
+#include "td/utils/port/StdStreams.h"
+#include "td/utils/port/FileFd.h"
+
+#include "terminal/terminal.h"
+#include "ton/ton-tl.hpp"
+#include "block/block-db.h"
+#include "block/block.h"
+#include "block/block-auto.h"
+#include "block/mc-config.h"
+#include "vm/boc.h"
+#include "vm/cellops.h"
+#include "vm/cells/MerkleProof.h"
+#include "ton/ton-shard.h"
+
+
+
 #include "http_server.hpp"
 
 #include <boost/property_tree/ptree.hpp>
@@ -67,7 +101,8 @@ public:
     }
 
     bool envelope_send_query(td::BufferSlice query, td::Promise<td::BufferSlice> promise);
-    bool envelope_send_web(td::BufferSlice query, td::Promise<td::BufferSlice> promise, std::shared_ptr<HttpServer::Response> response);
+    bool envelope_send_web(td::BufferSlice query, td::Promise<td::BufferSlice> promise,
+            std::shared_ptr<HttpServer::Response> response);
     void parse_line(td::BufferSlice data);
 
     // web server methods
@@ -94,38 +129,6 @@ public:
         get_server_mc_block_id_silent();
     }
 private:
-    std::string local_config_ = "ton-local.config";
-    std::string global_config_ = "ton-global.config";
-
-    td::actor::ActorOwn<ton::AdnlExtClient> client_;
-    td::actor::ActorOwn<td::TerminalIO> io_;
-
-    bool readline_enabled_ = true;
-    td::int32 liteserver_idx_ = -1;
-
-    bool ready_ = false;
-    bool inited_ = false;
-    bool update_on_demand_enabled_ = true;
-    std::string db_root_;
-
-    int server_time_ = 0;
-    int server_time_got_at_ = 0;
-
-    ton::ZeroStateIdExt zstate_id_;
-    ton::BlockIdExt mc_last_id_;
-
-    ton::BlockIdExt last_block_id_, last_state_id_;
-    td::BufferSlice last_block_data_, last_state_data_;
-
-    std::string line_;
-    const char *parse_ptr_, *parse_end_;
-    td::Status error_;
-
-    std::vector<ton::BlockIdExt> known_blk_ids_;
-    std::size_t shown_blk_ids_ = 0;
-
-    std::unique_ptr<ton::AdnlExtClient::Callback> make_callback();
-
     void run_init_queries();
     bool get_server_time();
     bool get_server_mc_block_id();
@@ -188,4 +191,37 @@ private:
     bool complete_blkid(ton::BlockId partial_blkid, ton::BlockIdExt& complete_blkid) const;
 
     static bool parse_account_addr(std::string acc_string, ton::WorkchainId& wc, ton::StdSmcAddress& addr);
+
+private:
+    std::string local_config_ = "ton-local.config";
+    std::string global_config_ = "ton-global.config";
+
+    td::actor::ActorOwn<ton::AdnlExtClient> client_;
+    td::actor::ActorOwn<td::TerminalIO> io_;
+
+    bool readline_enabled_ = true;
+    td::int32 liteserver_idx_ = -1;
+
+    bool ready_ = false;
+    bool inited_ = false;
+    bool update_on_demand_enabled_ = true;
+    std::string db_root_;
+
+    int server_time_ = 0;
+    int server_time_got_at_ = 0;
+
+    ton::ZeroStateIdExt zstate_id_;
+    ton::BlockIdExt mc_last_id_;
+
+    ton::BlockIdExt last_block_id_, last_state_id_;
+    td::BufferSlice last_block_data_, last_state_data_;
+
+    std::string line_;
+    const char *parse_ptr_, *parse_end_;
+    td::Status error_;
+
+    std::vector<ton::BlockIdExt> known_blk_ids_;
+    std::size_t shown_blk_ids_ = 0;
+
+    std::unique_ptr<ton::AdnlExtClient::Callback> make_callback();
 };

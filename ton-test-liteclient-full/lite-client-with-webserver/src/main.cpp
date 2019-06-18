@@ -1,41 +1,14 @@
-#include "test_node.cpp"
-#include "adnl/adnl-ext-client.h"
-#include "tl-utils/tl-utils.hpp"
-#include "auto/tl/ton_api_json.h"
-#include "td/utils/OptionsParser.h"
-#include "td/utils/Time.h"
-#include "td/utils/filesystem.h"
-#include "td/utils/format.h"
-#include "td/utils/Random.h"
-#include "td/utils/crypto.h"
-#include "td/utils/port/signals.h"
-#include "td/utils/port/stacktrace.h"
-#include "td/utils/port/StdStreams.h"
-#include "td/utils/port/FileFd.h"
-#include "terminal/terminal.h"
-#include "ton/ton-tl.hpp"
-#include "block/block-db.h"
-#include "block/block.h"
-#include "block/block-auto.h"
-#include "block/mc-config.h"
-#include "vm/boc.h"
-#include "vm/cellops.h"
-#include "vm/cells/MerkleProof.h"
-#include "ton/ton-shard.h"
-
-#if TD_DARWIN || TD_LINUX
-#include <unistd.h>
-#include <fcntl.h>
-#endif
 #include <iostream>
 #include <sstream>
 
-#include "lite-client-test-node-helpers.cpp"
-#include "lite-client-web-server.cpp"
-#include "method-time.cpp"
-#include "method-getaccount.cpp"
-#include "method-getblock.cpp"
-#include "method-last.cpp"
+#if TD_DARWIN || TD_LINUX
+    #include <unistd.h>
+    #include <fcntl.h>
+#endif
+
+
+
+#include <webserver/test_node.hpp>
 
 using td::Ref;
 
@@ -89,6 +62,96 @@ td::Status TestNode::save_db_file(ton::FileHash file_hash, td::BufferSlice data)
     return td::Status::Error("cannot save data file");
 }
 
+bool unpack_addr(std::ostream& os, Ref<vm::CellSlice> csr) {
+    ton::WorkchainId wc;
+    ton::StdSmcAddress addr;
+    if (!block::tlb::t_MsgAddressInt.extract_std_address(std::move(csr), wc, addr)) {
+        os << "<cannot unpack address>";
+        return false;
+    }
+    os << wc << ":" << addr.to_hex();
+    return true;
+}
+
+bool unpack_message(std::ostream& os, Ref<vm::Cell> msg, int mode) {
+    if (msg.is_null()) {
+        os << "<message not found>";
+        return true;
+    }
+    vm::CellSlice cs{vm::NoVmOrd(), msg};
+    block::gen::CommonMsgInfo info;
+    Ref<vm::CellSlice> src, dest;
+    switch (block::gen::t_CommonMsgInfo.get_tag(cs)) {
+        case block::gen::CommonMsgInfo::ext_in_msg_info: {
+            block::gen::CommonMsgInfo::Record_ext_in_msg_info info;
+            if (!tlb::unpack(cs, info)) {
+                LOG(DEBUG) << "cannot unpack inbound external message";
+                return false;
+            }
+            os << "EXT-IN-MSG";
+            if (!(mode & 2)) {
+                os << " TO: ";
+                if (!unpack_addr(os, std::move(info.dest))) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        case block::gen::CommonMsgInfo::ext_out_msg_info: {
+            block::gen::CommonMsgInfo::Record_ext_out_msg_info info;
+            if (!tlb::unpack(cs, info)) {
+                LOG(DEBUG) << "cannot unpack outbound external message";
+                return false;
+            }
+            os << "EXT-OUT-MSG";
+            if (!(mode & 1)) {
+                os << " FROM: ";
+                if (!unpack_addr(os, std::move(info.src))) {
+                    return false;
+                }
+            }
+            os << " LT:" << info.created_lt << " UTIME:" << info.created_at;
+            return true;
+        }
+        case block::gen::CommonMsgInfo::int_msg_info: {
+            block::gen::CommonMsgInfo::Record_int_msg_info info;
+            if (!tlb::unpack(cs, info)) {
+                LOG(DEBUG) << "cannot unpack internal message";
+                return false;
+            }
+            os << "INT-MSG";
+            if (!(mode & 1)) {
+                os << " FROM: ";
+                if (!unpack_addr(os, std::move(info.src))) {
+                    return false;
+                }
+            }
+            if (!(mode & 2)) {
+                os << " TO: ";
+                if (!unpack_addr(os, std::move(info.dest))) {
+                    return false;
+                }
+            }
+            os << " LT:" << info.created_lt << " UTIME:" << info.created_at;
+            td::RefInt256 value;
+            Ref<vm::Cell> extra;
+            if (!block::unpack_CurrencyCollection(info.value, value, extra)) {
+                LOG(ERROR) << "cannot unpack message value";
+                return false;
+            }
+            os << " VALUE:" << value;
+            if (extra.not_null()) {
+                os << "+extra";
+            }
+            return true;
+        }
+        default:
+            LOG(ERROR) << "cannot unpack message";
+            return false;
+    }
+}
+
+
 std::string message_info_str(Ref<vm::Cell> msg, int mode) {
     std::ostringstream os;
     if (!unpack_message(os, msg, mode)) {
@@ -111,19 +174,15 @@ td::Result<td::UInt256> get_uint256(std::string str) {
 
 
 
-
-
-
-void run_updater(td::actor::Scheduler* scheduler, td::actor::ActorOwn<TestNode>* x){
+void run_updater(td::actor::Scheduler* scheduler, td::actor::ActorOwn<TestNode>* owner){
   unsigned int microseconds = 2000000;
   while(true){
     usleep(microseconds);
     scheduler -> run_in_context([&] {
-      td::actor::send_closure(x -> get(), &TestNode::web_last);
+      td::actor::send_closure(owner -> get(), &TestNode::web_last);
     });
   }
 }
-
 
 void set_options(td::OptionsParser& p){
     p.set_description("Test Lite Client for TON Blockchain");
@@ -191,11 +250,14 @@ void set_options(td::OptionsParser& p){
 #endif
 }
 
+
+
+
 int main(int argc, char* argv[]) {
   SET_VERBOSITY_LEVEL(verbosity_INFO);
   td::set_default_failure_signal_handler();
 
-  td::actor::ActorOwn<TestNode> x;
+  td::actor::ActorOwn<TestNode> node;
 
   td::OptionsParser p;
 
@@ -203,21 +265,21 @@ int main(int argc, char* argv[]) {
 
   td::actor::Scheduler scheduler({2});
 
-  scheduler.run_in_context([&] { x = td::actor::create_actor<TestNode>("testnode"); });
+  scheduler.run_in_context([&] { node = td::actor::create_actor<TestNode>("testnode"); });
 
   scheduler.run_in_context([&] { p.run(argc, argv).ensure(); });
   scheduler.run_in_context([&] {
-    td::actor::send_closure(x, &TestNode::run);
+    td::actor::send_closure(node, &TestNode::run);
     // TMP disable release due to having an ability to call obj in another threads
     // TODO: do requests directly w/o using actors
     // x.release();
   });
 
   // web server thread
-  std::thread webserver = std::thread(TestNode::run_web_server, &scheduler, &x);
+  std::thread webserver = std::thread(TestNode::run_web_server, &scheduler, &node);
 
   // updater thread called 'last' command
-  std::thread updater = std::thread(run_updater, &scheduler, &x);
+  std::thread updater = std::thread(run_updater, &scheduler, &node);
 
   scheduler.run();
 
