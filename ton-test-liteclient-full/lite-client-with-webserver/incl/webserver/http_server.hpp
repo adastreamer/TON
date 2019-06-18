@@ -781,5 +781,82 @@ namespace SimpleWeb {
     }
   };
 
+
+  class Request{};
+
+  class Responce{
+
+  };
+
+  class Session{};
+
+  class Connection{
+  public:
+      Connection();
+  };
+
+  class Content{};
+
+
+
+
+
+  class CustomHttpServer{
+  public:
+      CustomHttpServer(const unsigned short port);
+      ~CustomHttpServer();
+
+      CustomHttpServer(const CustomHttpServer&) = delete;
+      CustomHttpServer& operator=(const CustomHttpServer&) = delete;
+      CustomHttpServer(const CustomHttpServer&&) = delete;
+
+
+
+      unsigned short bind();
+
+      /// If you know the server port in advance, use start() instead.
+      /// Accept requests, and if io_service was not set before calling bind(), run the internal io_service instead.
+      /// Call after bind().
+      void accept_and_run();
+
+      /// Start the server by calling bind() and accept_and_run()
+      void start();
+
+      /// Stop accepting new requests, and close current connections.
+      void stop() noexcept;
+  private:
+
+      void after_bind() {}
+      void accept();
+
+      template <typename... Args>
+      std::shared_ptr<Connection> create_connection(Args &&... args) noexcept;
+
+      void read(const std::shared_ptr<Session> &session);
+
+      void read_chunked_transfer_encoded(const std::shared_ptr<Session> &session,
+                                         const std::shared_ptr<asio::streambuf> &chunks_streambuf);
+
+      void read_chunked_transfer_encoded_chunk(const std::shared_ptr<Session> &session,
+                                               const std::shared_ptr<asio::streambuf> &chunks_streambuf,
+                                               unsigned long length);
+
+      void find_resource(const std::shared_ptr<Session> &session);
+
+      void write(const std::shared_ptr<Session> &session,
+                 std::function<void(std::shared_ptr<Responce>,
+                                    std::shared_ptr<Request>)> &resource_function);
+  private:
+      bool internal_io_service = false;
+
+      std::unique_ptr<asio::ip::tcp::acceptor> acceptor;
+      std::vector<std::thread> threads;
+
+      std::shared_ptr<std::unordered_set<Connection *>> connections;
+      std::shared_ptr<std::mutex> connections_mutex;
+
+      std::shared_ptr<ScopeRunner> handler_runner;
+  };
+
 }
 

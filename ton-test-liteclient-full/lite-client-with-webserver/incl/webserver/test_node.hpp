@@ -45,7 +45,7 @@
 // Short alias for this namespace
 namespace pt = boost::property_tree;
 
-using td::Ref;
+
 
 using HttpServer = SimpleWeb::Server<SimpleWeb::HTTP>;
 using td::Ref;
