@@ -36,12 +36,11 @@
 #include "vm/cells/MerkleProof.h"
 #include "ton/ton-shard.h"
 
-
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 
 #include "http_server.hpp"
 
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
 
 // Short alias for this namespace
 namespace pt = boost::property_tree;
