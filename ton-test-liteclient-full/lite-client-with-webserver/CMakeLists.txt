@@ -174,7 +174,7 @@ find_package(Boost 1.69 REQUIRED COMPONENTS system)
 include_directories(${Boost_INCLUDE_DIR})
 #BOOST
 
-file(GLOB SRC src/*.cpp)
+file(GLOB_RECURSE SRC src/*.cpp)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/incl)
 

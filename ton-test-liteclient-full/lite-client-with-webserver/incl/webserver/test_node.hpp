@@ -1,15 +1,13 @@
-#include "adnl/adnl-ext-client.h"
-#include "tl-utils/tl-utils.hpp"
-#include "ton/ton-types.h"
-#include "terminal/terminal.h"
-#include "vm/cells.h"
-
-
+#pragma once
 
 #include <ton/ton-tl.hpp>
 #include <crypto/block/block.h>
 #include <td/utils/filesystem.h>
 #include <ton/ton-shard.h>
+
+#include "ton/ton-types.h"
+#include "terminal/terminal.h"
+#include "vm/cells.h"
 #include "adnl/adnl-ext-client.h"
 #include "tl-utils/tl-utils.hpp"
 #include "auto/tl/ton_api_json.h"
@@ -39,16 +37,24 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
-#include "http_server.hpp"
+#define NEW_WEBSERVER
 
+
+#ifdef NEW_WEBSERVER
+    #include "new_http_server.h"
+    using namespace SimpleWeb;
+    using HttpServer=CustomHttpServer;
+#else
+    #include "http_server.hpp"
+    using HttpServer = SimpleWeb::Server<SimpleWeb::HTTP>;
+#endif
 
 // Short alias for this namespace
 namespace pt = boost::property_tree;
 
 
-
-using HttpServer = SimpleWeb::Server<SimpleWeb::HTTP>;
 using td::Ref;
+class Responce;
 
 class TestNode : public td::actor::Actor {
 public:
@@ -101,28 +107,28 @@ public:
 
     bool envelope_send_query(td::BufferSlice query, td::Promise<td::BufferSlice> promise);
     bool envelope_send_web(td::BufferSlice query, td::Promise<td::BufferSlice> promise,
-            std::shared_ptr<HttpServer::Response> response);
+            std::shared_ptr<Response> response);
     void parse_line(td::BufferSlice data);
 
     // web server methods
-    void get_server_time_web(std::shared_ptr<HttpServer::Response> response);
-    void get_account_state_web(std::string address, std::shared_ptr<HttpServer::Response> response);
+    void get_server_time_web(std::shared_ptr<Response> response);
+    void get_account_state_web(std::string address, std::shared_ptr<Response> response);
     void got_account_state_web(ton::BlockIdExt blk, ton::BlockIdExt shard_blk, td::BufferSlice shard_proof,
                                td::BufferSlice proof, td::BufferSlice state, ton::WorkchainId workchain,
-                               ton::StdSmcAddress addr, std::shared_ptr<HttpServer::Response> response);
-    void get_block_web(std::string blkid_str, std::shared_ptr<HttpServer::Response> response, bool dump = true);
-    void got_block_web(ton::BlockIdExt blkid, td::BufferSlice data, bool dump, std::shared_ptr<HttpServer::Response> response);
+                               ton::StdSmcAddress addr, std::shared_ptr<Response> response);
+    void get_block_web(std::string blkid_str, std::shared_ptr<Response> response, bool dump = true);
+    void got_block_web(ton::BlockIdExt blkid, td::BufferSlice data, bool dump, std::shared_ptr<Response> response);
     bool give_block_header_description(std::ostringstream& out, ton::BlockIdExt blkid, Ref<vm::Cell> root, int mode);
 
-    bool get_server_mc_block_id_web(std::shared_ptr<HttpServer::Response> response);
+    bool get_server_mc_block_id_web(std::shared_ptr<Response> response);
 
 
 
     // Web Server Methods
     static void run_web_server(td::actor::Scheduler* scheduler, td::actor::ActorOwn<TestNode>* x);
-    static void web_error_response(std::shared_ptr<HttpServer::Response> response, std::string msg);
-    static void web_success_response(std::shared_ptr<HttpServer::Response> response, std::string msg);
-    static void web_success_response(std::shared_ptr<HttpServer::Response> response, pt::ptree root);
+    static void web_error_response(std::shared_ptr<Response> response, std::string msg);
+    static void web_success_response(std::shared_ptr<Response> response, std::string msg);
+    static void web_success_response(std::shared_ptr<Response> response, pt::ptree root);
 
     void web_last(){
         get_server_mc_block_id_silent();

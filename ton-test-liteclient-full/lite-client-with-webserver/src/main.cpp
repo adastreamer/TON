@@ -8,7 +8,6 @@
 
 #include <webserver/test_node.hpp>
 
-using td::Ref;
 
 int verbosity;
 
@@ -22,6 +21,13 @@ void run_updater(td::actor::Scheduler* scheduler, td::actor::ActorOwn<TestNode>*
   }
 }
 
+void set_options(td::OptionsParser& p, td::actor::ActorOwn<TestNode>* node){
+
+}
+
+
+
+
 int main(int argc, char* argv[]) {
   SET_VERBOSITY_LEVEL(verbosity_INFO);
   td::set_default_failure_signal_handler();
@@ -29,6 +35,7 @@ int main(int argc, char* argv[]) {
   td::actor::ActorOwn<TestNode> node;
 
   td::OptionsParser p;
+  td::actor::Scheduler scheduler({2});
 
     p.set_description("Test Lite Client for TON Blockchain");
 
@@ -49,6 +56,7 @@ int main(int argc, char* argv[]) {
         td::actor::send_closure(node, &TestNode::set_local_config, fname.str());
         return td::Status::OK();
     });
+
     p.add_option('r', "disable-readline", "", [&]() {
         td::actor::send_closure(node, &TestNode::set_readline_enabled, false);
         return td::Status::OK();
@@ -94,26 +102,28 @@ int main(int argc, char* argv[]) {
     });
 #endif
 
+  try{
+     // set_options(p,&node);
+      scheduler.run_in_context([&] { node = td::actor::create_actor<TestNode>("testnode"); });
 
-  td::actor::Scheduler scheduler({2});
+      scheduler.run_in_context([&] { p.run(argc, argv).ensure(); });
+      scheduler.run_in_context([&] {
+          td::actor::send_closure(node, &TestNode::run);
+          // TMP disable release due to having an ability to call obj in another threads
+          // TODO: do requests directly w/o using actors
+          // x.release();
+      });
 
-  scheduler.run_in_context([&] { node = td::actor::create_actor<TestNode>("testnode"); });
+      // web server thread
+      std::thread webserver = std::thread(TestNode::run_web_server, &scheduler, &node);
 
-  scheduler.run_in_context([&] { p.run(argc, argv).ensure(); });
-  scheduler.run_in_context([&] {
-    td::actor::send_closure(node, &TestNode::run);
-    // TMP disable release due to having an ability to call obj in another threads
-    // TODO: do requests directly w/o using actors
-    // x.release();
-  });
+      // updater thread called 'last' command
+      std::thread updater = std::thread(run_updater, &scheduler, &node);
 
-  // web server thread
-  std::thread webserver = std::thread(TestNode::run_web_server, &scheduler, &node);
-
-  // updater thread called 'last' command
-  std::thread updater = std::thread(run_updater, &scheduler, &node);
-
-  scheduler.run();
-
+      scheduler.run();
+  }
+  catch (...){
+      std::cerr<< "Some exception was thrown" <<std::endl;
+  }
   return 0;
 }

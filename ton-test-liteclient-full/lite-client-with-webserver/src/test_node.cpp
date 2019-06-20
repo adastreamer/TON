@@ -1,6 +1,7 @@
 #include <webserver/test_node.hpp>
-#include "node_utils.hpp"
-
+#include "util/node_utils.hpp"
+#include <webserver/http_util/responce.hpp>
+#include <webserver/http_util/request.hpp>
 
 
 void TestNode::run() {
@@ -1456,7 +1457,7 @@ td::Status TestNode::save_db_file(ton::FileHash file_hash, td::BufferSlice data)
 
 /* Webserver ------------------------------------------------------------------------- */
 
-void TestNode::web_error_response(std::shared_ptr<HttpServer::Response> response, std::string msg) {
+void TestNode::web_error_response(std::shared_ptr<Response> response, std::string msg) {
     pt::ptree root;
     std::ostringstream oss;
     root.put("error", msg);
@@ -1465,7 +1466,7 @@ void TestNode::web_error_response(std::shared_ptr<HttpServer::Response> response
                       oss.str());
 }
 
-void TestNode::web_success_response(std::shared_ptr<HttpServer::Response> response, std::string msg) {
+void TestNode::web_success_response(std::shared_ptr<Response> response, std::string msg) {
     pt::ptree root;
     std::ostringstream oss;
     root.put("result", msg);
@@ -1473,7 +1474,7 @@ void TestNode::web_success_response(std::shared_ptr<HttpServer::Response> respon
     response -> write(oss.str());
 }
 
-void TestNode::web_success_response(std::shared_ptr<HttpServer::Response> response, pt::ptree result) {
+void TestNode::web_success_response(std::shared_ptr<Response> response, pt::ptree result) {
     pt::ptree root;
     std::ostringstream oss;
     root.put_child("result", result);
@@ -1482,12 +1483,12 @@ void TestNode::web_success_response(std::shared_ptr<HttpServer::Response> respon
 }
 
 void TestNode::run_web_server(td::actor::Scheduler* scheduler, td::actor::ActorOwn<TestNode>* x){
-    HttpServer server;
-    server.config.port = 8000;
+    HttpServer server(8000);
+    //server.config.port = 8000;
 
     // get a time
-    server.resource["^/time$"]["GET"] = [scheduler, x](std::shared_ptr<HttpServer::Response> response,
-                                                       std::shared_ptr<HttpServer::Request> request) {
+    server.resource["^/time$"]["GET"] = [scheduler, x](std::shared_ptr<Response> response,
+                                                       std::shared_ptr<Request> request) {
 
         std::thread work_thread([response, scheduler, x] {
             scheduler -> run_in_context([&] {
@@ -1499,8 +1500,8 @@ void TestNode::run_web_server(td::actor::Scheduler* scheduler, td::actor::ActorO
     //
 
     // get a account
-    server.resource["^/getaccount/(.+)$"]["GET"] = [scheduler, x](std::shared_ptr<HttpServer::Response> response,
-                                                                  std::shared_ptr<HttpServer::Request> request) {
+    server.resource["^/getaccount/(.+)$"]["GET"] = [scheduler, x](std::shared_ptr<Response> response,
+                                                                  std::shared_ptr<Request> request) {
         std::string address = request -> path_match[1].str();
 
         std::thread work_thread([response, scheduler, x, address] {
@@ -1512,8 +1513,8 @@ void TestNode::run_web_server(td::actor::Scheduler* scheduler, td::actor::ActorO
     };
 
     // get a block
-    server.resource["^/getblock/(.+)$"]["GET"] = [scheduler, x](std::shared_ptr<HttpServer::Response> response,
-                                                                std::shared_ptr<HttpServer::Request> request) {
+    server.resource["^/getblock/(.+)$"]["GET"] = [scheduler, x](std::shared_ptr<Response> response,
+                                                                std::shared_ptr<Request> request) {
         std::string blkid_str = request -> path_match[1].str();
         std::thread work_thread([response, scheduler, x, blkid_str] {
             scheduler -> run_in_context([&] {
@@ -1524,8 +1525,8 @@ void TestNode::run_web_server(td::actor::Scheduler* scheduler, td::actor::ActorO
     };
 
     // get a last block
-    server.resource["^/last$"]["GET"] = [scheduler, x](std::shared_ptr<HttpServer::Response> response,
-                                                       std::shared_ptr<HttpServer::Request> request) {
+    server.resource["^/last$"]["GET"] = [scheduler, x](std::shared_ptr<Response> response,
+                                                       std::shared_ptr<Request> request) {
         std::thread work_thread([response, scheduler, x] {
             scheduler -> run_in_context([&] {
                 td::actor::send_closure(x -> get(), &TestNode::get_server_mc_block_id_web, response);
@@ -1543,7 +1544,7 @@ void TestNode::run_web_server(td::actor::Scheduler* scheduler, td::actor::ActorO
 
 /* WebMethods ------------------------------------------------------------------------- */
 
-void TestNode::get_server_time_web(std::shared_ptr<HttpServer::Response> response) {
+void TestNode::get_server_time_web(std::shared_ptr<Response> response) {
     auto b = ton::serialize_tl_object(ton::create_tl_object<ton::ton_api::liteServer_getTime>(), true);
 
     envelope_send_web(std::move(b), [&, Self = actor_id(this), response](td::Result<td::BufferSlice> res) -> void {
@@ -1563,7 +1564,7 @@ void TestNode::get_server_time_web(std::shared_ptr<HttpServer::Response> respons
     }, response);
 }
 
-bool TestNode::get_server_mc_block_id_web(std::shared_ptr<HttpServer::Response> response) {
+bool TestNode::get_server_mc_block_id_web(std::shared_ptr<Response> response) {
     auto b = ton::serialize_tl_object(ton::create_tl_object<ton::ton_api::liteServer_getMasterchainInfo>(), true);
     return envelope_send_query(std::move(b), [Self = actor_id(this), response](td::Result<td::BufferSlice> res)->void {
         if (res.is_error()) {
@@ -1583,7 +1584,7 @@ bool TestNode::get_server_mc_block_id_web(std::shared_ptr<HttpServer::Response> 
     });
 }
 
-void TestNode::get_block_web(std::string blkid_str, std::shared_ptr<HttpServer::Response> response, bool dump) {
+void TestNode::get_block_web(std::string blkid_str, std::shared_ptr<Response> response, bool dump) {
     ton::BlockIdExt blkid;
     if(!TestNode::parse_block_id_ext(blkid_str, blkid, true))
     {
@@ -1617,7 +1618,7 @@ void TestNode::get_block_web(std::string blkid_str, std::shared_ptr<HttpServer::
 }
 
 
-void TestNode::got_block_web(ton::BlockIdExt blkid, td::BufferSlice data, bool dump, std::shared_ptr<HttpServer::Response> response) {
+void TestNode::got_block_web(ton::BlockIdExt blkid, td::BufferSlice data, bool dump, std::shared_ptr<Response> response) {
     LOG(INFO) << "obtained " << data.size() << " data bytes for block " << blkid.to_str();
     ton::FileHash fhash;
     td::sha256(data.as_slice(), fhash.as_slice());
@@ -1718,7 +1719,7 @@ bool TestNode::give_block_header_description(std::ostringstream& out, ton::Block
 }
 
 
-void TestNode::get_account_state_web(std::string address, std::shared_ptr<HttpServer::Response> response) {
+void TestNode::get_account_state_web(std::string address, std::shared_ptr<Response> response) {
     ton::WorkchainId workchain = ton::masterchainId;  // change to basechain later
     ton::StdSmcAddress addr;
     if (!TestNode::parse_account_addr(address, workchain, addr)){
@@ -1760,7 +1761,7 @@ void TestNode::get_account_state_web(std::string address, std::shared_ptr<HttpSe
 
 void TestNode::got_account_state_web(ton::BlockIdExt blk, ton::BlockIdExt shard_blk, td::BufferSlice shard_proof,
                                      td::BufferSlice proof, td::BufferSlice state, ton::WorkchainId workchain,
-                                     ton::StdSmcAddress addr, std::shared_ptr<HttpServer::Response> response) {
+                                     ton::StdSmcAddress addr, std::shared_ptr<Response> response) {
     if (state.empty()) {
         web_error_response(response, "account state is empty");
     } else {
@@ -1829,7 +1830,7 @@ bool TestNode::parse_account_addr(std::string acc_string, ton::WorkchainId& wc, 
 
 bool TestNode::envelope_send_web(td::BufferSlice query,
                                  td::Promise<td::BufferSlice> promise,
-                                 std::shared_ptr<HttpServer::Response> response) {
+                                 std::shared_ptr<Response> response) {
     if (!ready_ || client_.empty()) {
         web_error_response(response, "failed to send query to server: not ready");
         return false;
