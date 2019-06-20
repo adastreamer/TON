@@ -6,7 +6,7 @@ namespace SimpleWeb{
     Response::Response(std::shared_ptr<Session> session_, long timeout_content) noexcept :
     std::ostream(nullptr),
     session(std::move(session_)), timeout_content(timeout_content),
-    strand(session->connection->socket->get_io_service())
+    strand(session->get_connection()->socket->get_io_service())
     {
         rdbuf(streambuf.get());
     }
@@ -19,7 +19,7 @@ namespace SimpleWeb{
 
     /// Use this function if you need to recursively send parts of a longer message, or when using server-sent events (SSE).
     void Response::send(const std::function<void(const error_code &)> &callback) noexcept {
-        session->connection->set_timeout(timeout_content);
+        session->get_connection()->set_timeout(timeout_content);
 
         std::shared_ptr<asio::streambuf> streambuf = std::move(this->streambuf);
         this->streambuf = std::unique_ptr<asio::streambuf>(new asio::streambuf());
@@ -83,9 +83,9 @@ namespace SimpleWeb{
     void Response::send_from_queue() {
         auto self = this->shared_from_this();
         strand.post([self]() {
-            asio::async_write(*self->session->connection->socket,
+            asio::async_write(*self->session->get_connection()->socket,
                     *self->send_queue.begin()->first, self->strand.wrap([self](const error_code &ec, std::size_t /*bytes_transferred*/) {
-                auto lock = self->session->connection->handler_runner->continue_lock();
+                auto lock = self->session->get_connection()->handler_runner->continue_lock();
                 if(!lock)
                     return;
                 if(!ec) {
@@ -109,12 +109,12 @@ namespace SimpleWeb{
     }
 
     void Response::send_on_delete(const std::function<void(const error_code &)> &callback) noexcept  {
-        session->connection->set_timeout(timeout_content);
+        session->get_connection()->set_timeout(timeout_content);
         auto self = this->shared_from_this(); // Keep Response instance alive through the following async_write
-        asio::async_write(*session->connection->socket, *streambuf, [self, callback]
+        asio::async_write(*session->get_connection()->socket, *streambuf, [self, callback]
                 (const error_code &ec, std::size_t /*bytes_transferred*/) {
-            self->session->connection->cancel_timeout();
-            auto lock = self->session->connection->handler_runner->continue_lock();
+            self->session->get_connection()->cancel_timeout();
+            auto lock = self->session->get_connection()->handler_runner->continue_lock();
             if(!lock)
                 return;
             if(callback)

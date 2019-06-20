@@ -9,35 +9,21 @@
 namespace SimpleWeb{
     class Content : public std::istream {
     public:
-        Content(asio::streambuf &streambuf) noexcept : std::istream(&streambuf), streambuf(streambuf) {}
+        Content(asio::streambuf &streambuf) noexcept;
+        ~Content() = default;
 
-        std::size_t size() noexcept {
-            return streambuf.size();
-        }
+        std::size_t size() noexcept;
         /// Convenience function to return std::string. The stream buffer is consumed.
-        std::string string() noexcept {
-            try {
-                std::string str;
-                auto size = streambuf.size();
-                str.resize(size);
-                read(&str[0], static_cast<std::streamsize>(size));
-                return str;
-            }
-            catch(...) {
-                return std::string();
-            }
-        }
+        std::string string() noexcept;
 
     private:
         asio::streambuf &streambuf;
-
     };
 
     class Request {
     public:
         Request(std::size_t max_request_streambuf_size,
                 std::shared_ptr<asio::ip::tcp::endpoint> remote_endpoint_) noexcept;
-
 
         ~Request() = default;
 
@@ -47,8 +33,9 @@ namespace SimpleWeb{
 
         /// Returns query keys with percent-decoded values.
         CaseInsensitiveMultimap parse_query_string() const noexcept;
-
     public:
+
+        /* TODO as getters and setters in future */
 
         std::string method, path, query_string, http_version;
 

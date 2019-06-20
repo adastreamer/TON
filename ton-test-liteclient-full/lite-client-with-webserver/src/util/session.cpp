@@ -13,5 +13,13 @@ namespace SimpleWeb{
         }
         request = std::shared_ptr<Request>(new Request(max_request_streambuf_size, this->connection->remote_endpoint));
     }
+
+    std::shared_ptr<Connection> Session::get_connection() const {
+        return connection;
+    }
+
+    std::shared_ptr<Request> Session::get_request() const {
+        return request;
+    }
 }
 
