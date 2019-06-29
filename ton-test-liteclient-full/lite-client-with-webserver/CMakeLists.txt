@@ -8,12 +8,9 @@ set(CRC32C_BUILD_TESTS OFF CACHE BOOL "Build CRC32C's unit tests")
 set(CRC32C_BUILD_BENCHMARKS OFF CACHE BOOL "Build CRC32C's benchmarks")
 set(CRC32C_USE_GLOG OFF CACHE BOOL "Build CRC32C's tests with Google Logging")
 set(CRC32C_INSTALL OFF CACHE BOOL "Install CRC32C's header and library")
+add_subdirectory(lite-client/third-party/crc32c EXCLUDE_FROM_ALL)
 set(CRC32C_FOUND 1)
 set(HAVE_SSE42)
-
-
-add_subdirectory(lite-client/third-party/crc32c EXCLUDE_FROM_ALL)
-
 
 option(USE_LIBRAPTORQ "use libraptorq for tests" OFF)
 if (USE_LIBRAPTORQ)
@@ -113,11 +110,9 @@ if (NOT ANDROID) # _FILE_OFFSET_BITS is broken in ndk r15 and r15b and doesn't w
 endif()
 
 include(AddCXXCompilerFlag)
-
 if (NOT MSVC)
   add_cxx_compiler_flag("-Wall")
 endif()
-
 add_cxx_compiler_flag("-Wextra")
 add_cxx_compiler_flag("-Wimplicit-fallthrough=2")
 add_cxx_compiler_flag("-Wpointer-arith")
@@ -155,7 +150,6 @@ add_subdirectory(lite-client/tdnet)
 add_subdirectory(lite-client/tddb)
 add_subdirectory(lite-client/tdtl)
 add_subdirectory(lite-client/tl)
-
 if (USE_LIBRAPTORQ) 
   target_link_libraries(test-fec PRIVATE third_party_fec)
   target_compile_definitions(test-fec PRIVATE "USE_LIBRAPTORQ=1")
@@ -165,22 +159,9 @@ add_subdirectory(lite-client/terminal)
 add_subdirectory(lite-client/keys)
 add_subdirectory(lite-client/tl-utils)
 add_subdirectory(lite-client/adnl)
+
 add_subdirectory(lite-client/crypto)
 
-
-#BOOST
-set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost 1.69 REQUIRED COMPONENTS system)
-include_directories(${Boost_INCLUDE_DIR})
-#BOOST
-
-file(GLOB_RECURSE SRC src/*.cpp)
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/incl)
-
-set(PROJ_NAME test-lite-client-with-webserver)
-add_executable (${PROJ_NAME} ${SRC})
-
-
-target_link_libraries(${PROJ_NAME} tdutils tdactor adnllite tl_api
+add_executable (test-lite-client-with-webserver src/lite-client.cpp)
+target_link_libraries(test-lite-client-with-webserver tdutils tdactor adnllite tl_api 
   ton_crypto ton_block terminal)
