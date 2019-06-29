@@ -1,15 +1,13 @@
-#pragma once
+#ifndef SIMPLE_WEB_UTILITY_HPP
+#define SIMPLE_WEB_UTILITY_HPP
 
+#include "status_code.hpp"
 #include <atomic>
 #include <cstdlib>
 #include <iostream>
 #include <memory>
 #include <string>
 #include <unordered_map>
-
-#include "status_code.hpp"
-
-
 
 #if __cplusplus > 201402L || _MSVC_LANG > 201402L
 #include <string_view>
@@ -28,13 +26,12 @@ namespace SimpleWeb {
 #endif
 
 namespace SimpleWeb {
-  inline bool case_insensitive_equal(const std::string& str1, const std::string& str2) noexcept {
+  inline bool case_insensitive_equal(const std::string &str1, const std::string &str2) noexcept {
     return str1.size() == str2.size() &&
            std::equal(str1.begin(), str1.end(), str2.begin(), [](char a, char b) {
              return tolower(a) == tolower(b);
            });
   }
-
   class CaseInsensitiveEqual {
   public:
     bool operator()(const std::string &str1, const std::string &str2) const noexcept {
@@ -53,8 +50,7 @@ namespace SimpleWeb {
     }
   };
 
-  using CaseInsensitiveMultimap = std::unordered_multimap<std::string, std::string,
-                  CaseInsensitiveHash, CaseInsensitiveEqual>;
+  using CaseInsensitiveMultimap = std::unordered_multimap<std::string, std::string, CaseInsensitiveHash, CaseInsensitiveEqual>;
 
   /// Percent encoding and decoding
   class Percent {
@@ -298,8 +294,6 @@ namespace SimpleWeb {
       return true;
     }
   };
-
-
 } // namespace SimpleWeb
 
 #ifdef __SSE2__
@@ -365,3 +359,5 @@ namespace SimpleWeb {
     }
   };
 } // namespace SimpleWeb
+
+#endif // SIMPLE_WEB_UTILITY_HPP
