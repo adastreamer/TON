@@ -1,5 +1,4 @@
-#ifndef SIMPLE_WEB_STATUS_CODE_HPP
-#define SIMPLE_WEB_STATUS_CODE_HPP
+#pragma once
 
 #include <cstdlib>
 #include <map>
@@ -172,5 +171,3 @@ namespace SimpleWeb {
     return pos->second;
   }
 } // namespace SimpleWeb
-
-#endif // SIMPLE_WEB_STATUS_CODE_HPP
